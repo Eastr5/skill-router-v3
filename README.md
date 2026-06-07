@@ -1,38 +1,77 @@
 <p align="center">
-  <img src="assets/diagrams/rendered/logo-1.png" width="100" alt="Skill Router Logo">
+  <img src="assets/diagrams/rendered/logo-1.png" width="80" alt="Skill Router">
 </p>
 
 # Skill Router v3
 
-[![Skills](https://img.shields.io/badge/skills-30%2B-blue)](https://github.com/Eastr5/skill-router-v3)
-[![Platforms](https://img.shields.io/badge/platforms-Trae%20%7C%20Claude%20%7C%20Cursor%20%7C%20VSCode-green)](https://github.com/Eastr5/skill-router-v3)
-[![License](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
-[![MST](https://img.shields.io/badge/architecture-MCP--Skill--Tool-orange)](docs/architecture.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **首个 MCP-Skill-Tool (MST) 三层统一路由引擎** — 让 AI 自动决定用什么工具、什么 Skill、什么 MCP。
+> 一个 MCP-Skill-Tool 三层路由引擎。你告诉 AI 你想做什么，它自己决定用什么工具。
 
-## ✨ 30 秒看懂
+## 起因
+
+用 Trae / Claude Code / Cursor 的时候，装了几十个 Skill 和 MCP，但每次都要自己想"这个任务该用哪个"。有时候忘了某个 Skill 的名字，有时候不确定该调 paper-search 还是 semantic-scholar。
+
+所以做了这个东西——一个统一的入口，AI 根据你的意图自动选路。
+
+## 它怎么工作
 
 ```
-用户: "画个 Transformer 架构图放我论文里"
-     ↓
-AI:  🧠 意图分析 → 科研插图 + LaTeX/TikZ + 出版级 (置信度 0.95)
-     ↓
-AI:  🎯 自动调用 tikz-diagrams-guide + figura
-     ↓
-AI:  ✅ 生成 .tex → 编译 PDF → 展示 PNG
+你说: "画个 Transformer 架构图放论文里"
+  ↓
+分析意图 → 科研插图 + LaTeX/TikZ (置信度 0.95)
+  ↓
+自动调用 tikz-diagrams-guide + figura
+  ↓
+生成 .tex → 编译 PDF → 出图
 ```
 
-**不用记几十个 Skill 的名字，不用纠结该用哪个工具。说出来，AI 自动路由。**
+不需要记每个 Skill 的名字，也不需要手动选择。
 
-## 🚀 一键安装
+## 架构
 
-### Trae
+<p align="center">
+  <img src="assets/diagrams/rendered/mst-architecture-1.png" width="700" alt="MST Architecture">
+</p>
+
+三层结构：
+
+| 层 | 干什么的 | 例子 |
+|---|---------|------|
+| **MCP** | 接外部服务 | 论文搜索、MySQL、GitHub |
+| **Skill** | 领域知识 | TikZ 绘图、代码审查、数据分析 |
+| **Tool** | IDE 原生操作 | 读写文件、跑命令 |
+
+三层汇聚到同一个决策点，根据置信度分三种走法：
+
+- **置信度 ≥ 0.9** — 直接干，不废话
+- **0.7 ~ 0.9** — 给个建议，让你确认一下
+- **< 0.7** — 先问清楚你要什么
+
+## 自进化
+
+<p align="center">
+  <img src="assets/diagrams/rendered/self-evolution-1.png" width="580" alt="Self-Evolution">
+</p>
+
+不是写死的规则表。它会：
+
+1. **启动时扫描**你装了哪些 Skill、哪些 MCP 还活着
+2. **运行中记录**每次路由的结果，调整权重
+3. **失败时学习**备用路径
+
+状态存在 `skill-router-state.yaml` 里，下次启动接着学。
+
+## 安装
+
+### Trae（推荐）
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/install.sh | bash
 ```
 
 ### Claude Code
+
 ```bash
 mkdir -p ~/.claude/skills/skill-router
 curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/skills/skill-router/SKILL.md \
@@ -40,197 +79,77 @@ curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/skills/s
 ```
 
 ### Cursor / VSCode
-见 [跨平台迁移指南](docs/platform-guide.md)
 
-## 🏗️ MST 三层架构
+把 `skills/skill-router/SKILL.md` 复制到对应的 skills 目录即可。详见 [跨平台迁移指南](docs/platform-guide.md)。
 
-<p align="center">
-  <img src="assets/diagrams/rendered/mst-architecture-1.png" width="750" alt="MST Architecture">
-</p>
+## 和其他方案的区别
 
-| 层级 | 职责 | 示例 |
-|---|---|---|
-| **MCP** | 外部服务连接 | 论文搜索、数据库、GitHub、Draw.io |
-| **Skill** | 领域知识注入 | TikZ 绘图、代码审查、数据分析 |
-| **Tool** | 原生 IDE 操作 | 读写文件、执行命令、搜索代码 |
-
-## 🎯 三种执行模式
-
-### Mode A: Auto-Invoke (置信度 ≥ 0.9)
-意图明确，直接执行，不问废话。
-
-```
-用户: "画个 Transformer 架构图放我论文里"
-→ 自动调用: tikz-diagrams-guide + figura
-```
-
-### Mode B: Recommend + Confirm (置信度 0.7-0.9)
-意图较明确，但选择有讲究，给建议让用户确认。
-
-```
-用户: "我想可视化一些数据"
-→ 建议: "用 figura (matplotlib, 适合论文) 还是 chart-visualization (JS, 适合网页)?"
-```
-
-### Mode C: Interview (置信度 < 0.7)
-意图模糊，先问清楚再行动。
-
-```
-用户: "帮我做个东西"
-→ 询问: "1) 网站/应用 2) 数据分析 3) 论文/研究 4) 设计/图?"
-```
-
-## 📊 与竞品的对比
-
-| 特性 | [lingxling](https://github.com/lingxling/awesome-skills-cn) (38⭐) | [TerminalSkills](https://github.com/TerminalSkills/skills) (26⭐) | **Skill Router v3** |
+| | [lingxling/awesome-skills-cn](https://github.com/lingxling/awesome-skills-cn) | [TerminalSkills/skills](https://github.com/TerminalSkills/skills) | 本项目 |
 |---|---|---|---|
-| **MCP 感知** | ❌ 无 | ❌ 无 | ✅ **健康检查 + Fallback** |
-| **半决策化** | ❌ 总是询问 | ❌ 手动配置 | ✅ **置信度阈值自动决策** |
-| **跨平台** | ❌ Antigravity 专用 | ❌ Claude Code 专用 | ✅ **Trae/Claude/Cursor/VSCode** |
-| **环境感知** | ❌ 无 | ❌ 无 | ✅ **YAML 注册表 + 状态检测** |
-| **三层架构** | ❌ 仅 Skill | ❌ 仅 Agent | ✅ **MCP + Skill + Tool** |
-| **组合配方** | 少量 | 无 | ✅ **12 个 MST 组合** |
-| **中文支持** | ✅ | ❌ | ✅ **"我该用啥" 触发** |
+| MCP 感知 | 没有 | 没有 | 有健康检查和自动 fallback |
+| 自动决策 | 每次都问你 | 手动配规则 | 置信度阈值自动判断 |
+| 跨平台 | Antigravity 专用 | Claude Code 专用 | Trae / Claude / Cursor / VSCode |
+| 会越用越准 | 不会 | 不会 | 有自进化机制 |
 
-## 🧩 12 个 MST 组合配方
+## 预设了这些组合
 
-| # | 场景 | MCP | Skill | Tool |
-|---|---|---|---|---|
-| 1 | 找论文+读+整理 | `paper-search` → `semantic-scholar` | `literature-search` → `academic-research-assistant` | `Read` |
-| 2 | 画科研图+编译 | — | `tikz-diagrams-guide` → `figura` | `RunCommand` (pdflatex) |
-| 3 | Excel数据→报告 | `MySQL` (如有) | `data-analysis` → `consulting-analysis` | `Read` |
-| 4 | Figma→React代码 | — | `figma` → `frontend-design` → `shadcn` | `Write` |
-| 5 | 代码审查+安全 | — | `TRAE-code-review` + `TRAE-security-review` | `Read` |
-| 6 | 网页→笔记 | — | `defuddle` → `obsidian-markdown` | `WebFetch` |
-| 7 | 系统综述PRISMA | `paper-search` | `literature-search` → `academic-research-assistant` | `Task` |
-| 8 | Web app QA | — | `dogfood` + `agent-browser` | `RunCommand` |
-| 9 | 搭SaaS落地页 | — | `web-dev` → `frontend-design` → `theme-factory` | `RunCommand` |
-| 10 | 视频分析报告 | — | `hook-analyzer` → `report-generator` | `Read` |
-| 11 | 多模型代码生成 | `AI router MCP` | `agent-swarm-orchestration` | `Task` |
-| 12 | 论文端到端发表 | `paper-search` + `semantic-scholar` | `literature-search` → `academic-research-assistant` → `figura` | `RunCommand` |
+| 场景 | 用到的组件 |
+|------|-----------|
+| 找论文 + 读 + 整理 | `paper-search` + `literature-search` + `Read` |
+| 画科研图 + 编译 | `tikz-diagrams-guide` + `figura` + `RunCommand(pdflatex)` |
+| Excel 数据出报告 | `MySQL`(可选) + `data-analysis` + `Read` |
+| Figma 设计稿转代码 | `figma` + `frontend-design` + `shadcn` + `Write` |
+| 代码审查 + 安全扫描 | `TRAE-code-review` + `TRAE-security-review` + `Read` |
+| 网页内容转笔记 | `defuddle` + `obsidian-markdown` + `WebFetch` |
+| 系统综述 (PRISMA) | `paper-search` + `academic-research-assistant` + `Task` |
+| Web 应用测试 | `dogfood` + `agent-browser` + `RunCommand` |
+| 搭落地页 | `web-dev` + `frontend-design` + `theme-factory` |
+| 视频分镜分析 | `hook-analyzer` + `report-generator` + `Read` |
+| 论文从零到发表 | 全套 MCP + Skill + Tool 链路 |
 
-## 🔄 自进化机制
+## 两个版本
 
-<p align="center">
-  <img src="assets/diagrams/rendered/self-evolution-1.png" width="600" alt="Self-Evolution Loop">
-</p>
-
-Skill Router v3 不是静态配置 —— 它会**自动扫描**你的环境，**学习**你的偏好，**进化**它的推荐：
-
-1. **Bootstrap Scan**: 启动时自动检测全局/项目 skills 和 MCP 健康状态
-2. **Runtime Learning**: 每次路由后记录反馈，动态调整置信度权重
-3. **Adaptive Fallback**: 主路径失败时自动学习备用路径，越用越准
-
-状态持久化到 `<project>/.trae/skill-router-state.yaml`，跨会话保持进化成果。
-
-## 🌐 跨平台兼容
-
-| 平台 | Skill 路径 | 状态 |
-|---|---|---|
-| **Trae** | `~/.trae-cn/builtin/global/skills/` + `<project>/.trae/skills/` | ✅ 原生支持 |
-| **Claude Code** | `~/.claude/skills/` | ✅ 已验证 |
-| **Cursor** | `.cursor/skills/` | 🧪 实验性 |
-| **VSCode + Cline** | `.cline/skills/` | 🧪 实验性 |
-
-> 迁移只需复制 `SKILL.md` 文件并更新路径。详见 [跨平台迁移指南](docs/platform-guide.md)。
-
-## 📦 包含的 Skills
-
-### 核心路由
-- **`skill-router`** — MST 统一编排器（本仓库）
-
-### 科研学术
-- **`figura`** — 出版级图表（matplotlib + TikZ）
-- **`tikz-diagrams-guide`** — TikZ 模板（Transformer/3D/贝叶斯/交换图）
-
-## 🛠️ 快速开始
-
-### 1. 安装
-```bash
-curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/install.sh | bash
-```
-
-### 2. 重启你的 AI IDE
-Trae / Claude Code / Cursor 需要重启才能加载新 Skill。
-
-### 3. 使用
-直接说出你的需求，AI 会自动路由：
-
-```
-用户: 我该用啥 skill 找论文？
-AI:  🧭 推荐 literature-search（多数据库文献搜索）
-     配套: mcp_paper-search + mcp_semantic-scholar
-```
-
-或者让 AI 自动决策：
-```
-用户: 画个贝叶斯网络放我 paper 里
-AI:  ✅ 自动调用 tikz-diagrams-guide + figura
-```
-
-## 📦 Packages
-
-| 包 | 大小 | 适用场景 | 架构 |
-|---|---|---|---|
-| **skill-router-v3** | ~15KB | 复杂任务、需要 MCP/Tool 管理 | MST 三层 + 自进化 |
-| **skill-router-lite** | ~5KB | 快速路由、纯 Skill 决策 | 单层决策树 |
-
-### 快速选择
-- 需要自动检测 MCP 状态？→ **v3**
-- 只需要"我该用啥 skill"？→ **lite**
-- 两者可以共存，v3 会自动 fallback 到 lite 的逻辑
-
-### 安装特定版本
+| 版本 | 大小 | 适合谁 |
+|------|------|--------|
+| **v3** (~15KB) | 完整 MST 三层 + 自进化 | 需要 MCP 管理、复杂任务编排 |
+| **lite** (~5KB) | 纯决策树，无 MCP | 只想要"帮我选 skill" |
 
 ```bash
-# 只装 v3（完整功能）
-curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/install.sh | bash -s -- --package v3
+# 默认装两个
+curl -sSL .../install.sh | bash
 
-# 只装 lite（轻量快速）
-curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/install.sh | bash -s -- --package lite
+# 只要 v3
+curl -sSL .../install.sh | bash -s -- --package v3
 
-# 两者都装（默认）
-curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/install.sh | bash
+# 只要 lite
+curl -sSL .../install.sh | bash -s -- --package lite
 ```
 
-## 📁 仓库结构
+## 项目结构
 
 ```
 skill-router-v3/
-├── README.md                 # 本文件
-├── LICENSE                   # MIT
-├── install.sh                # 一键安装脚本（支持选择性安装）
-├── templates/
-│   └── skill-router-state.yaml   # 自进化状态模板
 ├── skills/
-│   ├── skill-router/         # MST 统一路由引擎（v3，含自进化）
-│   ├── figura/               # 出版级图表
-│   └── tikz-diagrams-guide/  # TikZ 科研绘图
+│   ├── skill-router/          # 主路由引擎 (v3)
+│   ├── figura/                # 出版级图表
+│   └── tikz-diagrams-guide/   # TikZ 科研绘图
 ├── packages/
-│   └── skill-router-lite/    # 轻量决策树版本（v2）
-│       ├── SKILL.md
-│       ├── README.md
-│       └── examples/
-├── examples/                 # 场景示例
-├── docs/                     # 文档
-│   ├── architecture.md       # MST 架构详解
-│   └── platform-guide.md     # 跨平台迁移
-└── assets/                   # 演示资源
+│   └── skill-router-lite/     # 轻量版 (v2)
+├── templates/
+│   └── skill-router-state.yaml
+├── install.sh                 # 安装脚本
+├── assets/diagrams/           # 架构图 (LaTeX/TikZ 源文件)
+└── docs/                      # 详细文档
 ```
 
-## 🤝 贡献
+## 贡献
 
-欢迎提交 PR！特别是：
+欢迎 PR。比较需要的：
+
 - 新的 Skill 路由规则
-- 更多平台适配
-- 实际使用案例
+- 更多平台的适配验证
+- 实际使用中的踩坑记录
 
-详见 [贡献指南](docs/contributing.md)。
+## License
 
-## 📄 License
-
-MIT © 2026
-
----
-
-> **Star ⭐ 这个仓库**，如果你也觉得 AI 应该自己决定用什么工具。
+MIT

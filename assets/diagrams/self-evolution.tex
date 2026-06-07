@@ -1,69 +1,108 @@
-\documentclass[tikz, border=12pt]{standalone}
+% =============================================================================
+% Self-Evolution Protocol — Clean Minimal Arrow Design v3
+% Key principle: MAX 2 arrows per anchor point, NO crossings.
+%
+% Layout:
+%   Row 1:  BOOTSTRAP --> RUNTIME --> ADAPTIVE  (horizontal pipeline)
+%   Row 2:  [Self-Evolution Engine] <--> [State]  (below center)
+%
+% Arrows (only 5 total, every one has a clear purpose):
+%   ① Bootstrap -> Runtime       (forward pipeline)
+%   ② Runtime -> Adaptive        (forward pipeline)
+%   ③ All three cards -> Engine   (each drops straight down, no overlap)
+%   ④ Engine <-> State           (horizontal, same row)
+%   ⑤ Adaptive -> Bootstrap      (feedback U-loop along bottom edge)
+% =============================================================================
+\documentclass[tikz, border=10pt]{standalone}
 \usepackage{tikz}
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, decorations.pathmorphing}
+\usetikzlibrary{arrows.meta, calc}
 
-% Okabe-Ito colorblind-safe palette
-\definecolor{bootstrapblue}{HTML}{0072B2}
-\definecolor{learningorange}{HTML}{D55E00}
-\definecolor{fallbackgreen}{HTML}{009E73}
-\definecolor{darkgray}{HTML}{333333}
-\definecolor{lightgray}{HTML}{F5F5F5}
-\definecolor{medgray}{HTML}{999999}
+\definecolor{bootblue}{HTML}{0072B2}
+\definecolor{learnorange}{HTML}{E69F00}
+\definecolor{fallgreen}{HTML}{009E73}
+\definecolor{ink}{HTML}{1A1A1A}
+\definecolor{subink}{HTML}{555555}
+\definecolor{softgray}{HTML}{E8E8E8}
 
 \begin{document}
 \begin{tikzpicture}[
     >=Stealth,
-    thick,
-    node distance=2.8cm,
-    mainnode/.style={
-        circle, minimum size=2.2cm, text centered,
-        font=\footnotesize\bfseries, draw=darkgray, line width=0.8pt,
-        fill=white, text width=1.8cm, align=center
-    },
-    centernode/.style={
-        circle, minimum size=1.6cm, text centered,
-        font=\scriptsize\bfseries, draw=darkgray, line width=0.6pt,
-        fill=lightgray, text width=1.4cm, align=center
-    },
-    statebox/.style={
-        rectangle, rounded corners=3pt, minimum width=2.8cm, minimum height=0.6cm,
-        text centered, font=\tiny, draw=medgray, line width=0.4pt,
-        fill=white, dashed
-    },
-    arrow/.style={
-        ->, line width=1.0pt, darkgray
-    },
-    cyclearrow/.style={
-        ->, line width=1.2pt, darkgray, bend left=25
-    }
+    arr/.style={->, line width=1.0pt, ink, rounded corners=4pt},
+    bi/.style={<->, line width=0.75pt, subink},
+    every node/.style={font=\sffamily, align=center},
+    % Process card
+    pcard/.style={rectangle, draw=ink, line width=0.8pt, fill=white,
+                  minimum width=3.0cm, minimum height=2.5cm, align=left,
+                  inner sep=7pt},
+    % Small box
+    sbox/.style={rectangle, rounded corners=3pt, draw=ink, line width=0.9pt,
+                 minimum width=2.8cm, minimum height=1.15cm, align=center,
+                 font=\small\bfseries, inner sep=6pt},
+    stbox/.style={rectangle, rounded corners=2pt, draw=subink, line width=0.55pt,
+                  dashed, fill=white, minimum width=2.9cm, minimum height=1.15cm,
+                  font=\scriptsize, align=center, inner sep=5pt}
 ]
 
-% Title
-\node[font=\large\bfseries, text=darkgray] at (0, 3.2) {Self-Evolution Protocol};
+% ========== Title ==========
+\node[font=\Large\bfseries, text=ink] at (0, 5.6) {Self-Evolution Protocol};
 
-% Three main nodes in triangle
-\node[mainnode, fill=bootstrapblue!10, text=bootstrapblue] (boot) at (0, 1.8) {Bootstrap\\Scan};
-\node[mainnode, fill=learningorange!10, text=learningorange] (learn) at (-2.4, -1.2) {Runtime\\Learning};
-\node[mainnode, fill=fallbackgreen!10, text=fallbackgreen] (fallback) at (2.4, -1.2) {Adaptive\\Fallback};
+% ========== ROW 1: Three cards ==========
+% --- Bootstrap ---
+\node[pcard] at (-4.2, 1.85) (boot) {};
+\fill[bootblue] (boot.north west) rectangle ([xshift=3.0cm, yshift=-0.48cm]boot.north west);
+\node[font=\bfseries\footnotesize, text=white, anchor=west]
+    at ([xshift=0.12cm, yshift=-0.24cm]boot.north west) {BOOTSTRAP};
+\node[font=\scriptsize, text=ink, anchor=north west, text width=2.7cm]
+    at ([xshift=0.08cm, yshift=-0.62cm]boot.north west)
+    {Scan available skills\\Verify MCP health\\Initialize routing table};
 
-% Center node
-\node[centernode] (center) at (0, -0.2) {Self-Evolution\\Engine};
+% --- Runtime ---
+\node[pcard] at (0, 1.85) (learn) {};
+\fill[learnorange] (learn.north west) rectangle ([xshift=3.0cm, yshift=-0.48cm]learn.north west);
+\node[font=\bfseries\footnotesize, text=white, anchor=west]
+    at ([xshift=0.12cm, yshift=-0.24cm]learn.north west) {RUNTIME};
+\node[font=\scriptsize, text=ink, anchor=north west, text width=2.7cm]
+    at ([xshift=0.08cm, yshift=-0.62cm]learn.north west)
+    {Log routing decisions\\Update skill weights\\Persist to state file};
 
-% Cycle arrows
-\draw[cyclearrow] (boot) to (learn);
-\draw[cyclearrow] (learn) to (fallback);
-\draw[cyclearrow] (fallback) to (boot);
+% --- Adaptive ---
+\node[pcard] at (4.2, 1.85) (fall) {};
+\fill[fallgreen] (fall.north west) rectangle ([xshift=3.0cm, yshift=-0.48cm]fall.north west);
+\node[font=\bfseries\footnotesize, text=white, anchor=west]
+    at ([xshift=0.12cm, yshift=-0.24cm]fall.north west) {ADAPTIVE};
+\node[font=\scriptsize, text=ink, anchor=north west, text width=2.7cm]
+    at ([xshift=0.08cm, yshift=-0.62cm]fall.north west)
+    {Detect skill drift\\Consolidate state\\Re-evaluate priorities};
 
-% State persistence
-\node[statebox, below=0.8cm of center] (state) {skill-router-state.yaml};
-\draw[arrow, <->, line width=0.6pt, medgray] (center) -- (state);
+% ========== ROW 2: Engine + State ==========
+\node[sbox, fill=softgray, text=ink] at (0, -0.7) (cen) {Self-Evolution\\Engine};
 
-% Detail labels
-\node[font=\tiny, text=medgray, above=0.2cm of boot] {Scan skills · Detect MCP health};
-\node[font=\tiny, text=medgray, left=0.2cm of learn, align=right] {Log decisions\\Update weights};
-\node[font=\tiny, text=medgray, right=0.2cm of fallback, align=left] {Detect drift\\Consolidate state};
+\node[stbox] at (3.4, -0.7) (state) {skill-router-state.yaml};
+
+% ========== ARROWS (5 total, carefully placed) ==========
+
+% --- ①+② Forward pipeline: Bootstrap -> Runtime -> Adaptive ---
+\draw[arr] (boot.east) -- (learn.west);
+\draw[arr] (learn.east) -- (fall.west);
+
+% --- ③ Cards -> Engine: each card has exactly ONE downward arrow ---
+% Bootstrap -> Engine (from south-right of boot, angled down to engine's north-west)
+\draw[arr] ($(boot.south) + (0.6, 0)$) -- ($(cen.north) + (-0.9, 0)$);
+% Runtime -> Engine (straight down, centered)
+\draw[arr] (learn.south) -- (cen.north);
+% Adaptive -> Engine (from south-left of fall, angled down to engine's north-east)
+\draw[arr] ($(fall.south) + (-0.6, 0)$) -- ($(cen.north) + (0.9, 0)$);
+
+% --- ④ Engine <-> State (horizontal, no overlap with anything) ---
+\draw[bi] (cen.east) -- (state.west);
+
+% --- ⑤ Feedback loop: Adaptive -> Bootstrap (U-shaped along TOP outer boundary) ---
+% Path: fall outer-north -> up (well above cards) -> left -> down into boot outer-north
+\draw[arr] ($(fall.north) + (1.1, 0)$) -- ++(0, 1.7) -| ($(boot.north) + (1.1, 0)$);
+
+% --- Legend removed (arrow types are self-evident) ---
 
 \end{tikzpicture}
 \end{document}

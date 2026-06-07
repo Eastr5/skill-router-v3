@@ -1,99 +1,101 @@
-\documentclass[tikz, border=12pt]{standalone}
+% =============================================================================
+% MST (MCP-Skill-Tool) Architecture — Clean Rebuild
+% Design language: classic academic block diagram, generous whitespace,
+% clear visual hierarchy, no decorative shadows
+% =============================================================================
+\documentclass[tikz, border=10pt]{standalone}
 \usepackage{tikz}
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, backgrounds}
+\usetikzlibrary{arrows.meta, calc, fit, backgrounds}
 
 % Okabe-Ito colorblind-safe palette
 \definecolor{mcpblue}{HTML}{0072B2}
-\definecolor{skillorange}{HTML}{D55E00}
+\definecolor{skillorange}{HTML}{E69F00}
 \definecolor{toolgreen}{HTML}{009E73}
-\definecolor{darkgray}{HTML}{333333}
-\definecolor{lightgray}{HTML}{F5F5F5}
-\definecolor{medgray}{HTML}{999999}
+\definecolor{ink}{HTML}{1A1A1A}
+\definecolor{subink}{HTML}{555555}
 
 \begin{document}
 \begin{tikzpicture}[
-    node distance=1.2cm and 1.5cm,
     >=Stealth,
-    thick,
-    box/.style={
-        rectangle, rounded corners=4pt, minimum width=3.2cm, minimum height=1.0cm,
-        text centered, font=\small\bfseries, draw=darkgray, line width=0.8pt
-    },
-    layerbox/.style={
-        rectangle, rounded corners=3pt, minimum width=3.0cm, minimum height=2.8cm,
-        draw=darkgray, line width=0.6pt, fill=lightgray
-    },
-    layerlabel/.style={
-        font=\footnotesize\bfseries, text centered
-    },
-    item/.style={
-        font=\scriptsize, text centered, text width=2.6cm
-    },
-    decision/.style={
-        rectangle, rounded corners=3pt, minimum width=2.4cm, minimum height=0.7cm,
-        text centered, font=\scriptsize, draw=darkgray, line width=0.5pt,
-        fill=white
-    },
-    arrow/.style={
-        ->, line width=1.2pt, darkgray
-    },
-    smallarrow/.style={
-        ->, line width=0.8pt, darkgray
-    }
+    arr/.style={->, line width=1.1pt, ink},
+    every node/.style={font=\sffamily},
+    % Pipeline header box
+    header/.style={rectangle, rounded corners=2pt, draw=ink, line width=0.8pt, fill=white,
+                   minimum width=9cm, minimum height=0.75cm, align=center, font=\small\bfseries},
+    % Layer column box
+    col/.style={rectangle, draw=ink, line width=0.8pt, fill=white,
+                minimum width=2.8cm, minimum height=3.2cm, align=center,
+                inner sep=8pt},
+    % Small decision box
+    decbox/.style={rectangle, rounded corners=3pt, draw=ink, line width=0.7pt,
+                   minimum width=2.1cm, minimum height=0.65cm,
+                   align=center, font=\scriptsize, fill=white},
+    % Tiny confidence label
+    cnf/.style={font=\tiny, text=subink}
 ]
 
-% Top: User Request
-\node[box, fill=white, minimum width=6cm] (user) {USER REQUEST};
+% ---------- Title ----------
+\node[font=\Large\bfseries, text=ink] at (0, 5.6) {MST (MCP--Skill--Tool) Architecture};
 
-% Intent Analysis box
-\node[box, fill=white, minimum width=6cm, below=0.8cm of user] (intent) {INTENT ANALYSIS};
-\node[font=\tiny, text=medgray, below=0.05cm of intent] (intentdetail) {Task type · Complexity · Urgency · Constraints};
+% ---------- Top pipeline ----------
+\node[header] at (0, 4.65) (user) {USER REQUEST};
+\node[header] at (0, 3.55) (intent) {INTENT ANALYSIS};
+\node[cnf] at (0, 2.95) {Task type \quad Complexity \quad Urgency \quad Constraints};
 
-% Three layers
-\node[layerbox, below=1.0cm of intent, xshift=-3.6cm, fill=mcpblue!8] (mcp) {};
-\node[layerlabel, above=0.15cm of mcp.center, text=mcpblue] {MCP Layer};
-\node[item, below=0.3cm of mcp.center, text=darkgray] {External Services\\paper-search · MySQL · GitHub};
+% ---------- Three layer columns ----------
+% MCP
+\node[col, fill=mcpblue!8] at (-3.5, 0.4) (mcp) {};
+\node[font=\bfseries, text=mcpblue] at (mcp.north) [yshift=-0.35cm] {MCP Layer};
+\node[font=\scriptsize, text=ink, align=center] at ([yshift=-1.0cm]mcp.north) {External\\Services};
+\node[font=\scriptsize, text=subink, align=center] at ([yshift=-1.9cm]mcp.north) {paper-search};
+\node[font=\scriptsize, text=subink, align=center] at ([yshift=-2.35cm]mcp.north) {MySQL};
+\node[font=\scriptsize, text=subink, align=center] at ([yshift=-2.75cm]mcp.north) {GitHub};
 
-\node[layerbox, below=1.0cm of intent, fill=skillorange!8] (skill) {};
-\node[layerlabel, above=0.15cm of skill.center, text=skillorange] {Skill Layer};
-\node[item, below=0.3cm of skill.center, text=darkgray] {Domain Knowledge\\TikZ · Code Review · Data};
+% Skill
+\node[col, fill=skillorange!8] at (0, 0.4) (skill) {};
+\node[font=\bfseries, text=skillorange] at (skill.north) [yshift=-0.35cm] {Skill Layer};
+\node[font=\scriptsize, text=ink, align=center] at ([yshift=-1.0cm]skill.north) {Domain\\Knowledge};
+\node[font=\scriptsize, text=subink, align=center] at ([yshift=-1.9cm]skill.north) {TikZ};
+\node[font=\scriptsize, text=subink, align=center] at ([yshift=-2.35cm]skill.north) {Code Review};
+\node[font=\scriptsize, text=subink, align=center] at ([yshift=-2.75cm]skill.north) {Data Analysis};
 
-\node[layerbox, below=1.0cm of intent, xshift=3.6cm, fill=toolgreen!8] (tool) {};
-\node[layerlabel, above=0.15cm of tool.center, text=toolgreen] {Tool Layer};
-\node[item, below=0.3cm of tool.center, text=darkgray] {Native IDE Ops\\Read · RunCommand · Task};
+% Tool
+\node[col, fill=toolgreen!8] at (3.5, 0.4) (tool) {};
+\node[font=\bfseries, text=toolgreen] at (tool.north) [yshift=-0.35cm] {Tool Layer};
+\node[font=\scriptsize, text=ink, align=center] at ([yshift=-1.0cm]tool.north) {Native\\IDE Ops};
+\node[font=\scriptsize, text=subink, align=center] at ([yshift=-1.9cm]tool.north) {Read / Write};
+\node[font=\scriptsize, text=subink, align=center] at ([yshift=-2.35cm]tool.north) {RunCommand};
+\node[font=\scriptsize, text=subink, align=center] at ([yshift=-2.75cm]tool.north) {Task};
 
-% Arrows from intent to layers
-\draw[arrow] (intent.south -| mcp.north) -- (mcp.north);
-\draw[arrow] (intent.south -| skill.north) -- (skill.north);
-\draw[arrow] (intent.south -| tool.north) -- (tool.north);
+% ---------- Intent -> Layers (fan out) ----------
+\draw[arr] (-1.5, 3.18) -- (-3.5, 2.0);
+\draw[arr] (0, 3.18) -- (0, 2.0);
+\draw[arr] (1.5, 3.18) -- (3.5, 2.0);
 
-% Bottom: Execution Decision
-\node[box, fill=white, minimum width=6cm, below=1.0cm of skill] (exec) {EXECUTION DECISION};
+% ---------- Execution Decision ----------
+\node[header, minimum width=9.6cm, minimum height=1.0cm] at (0, -2.0) (exec) {EXECUTION DECISION};
 
-% Arrows from layers to exec
-\draw[arrow] (mcp.south) -- (mcp.south |- exec.north);
-\draw[arrow] (skill.south) -- (exec.north);
-\draw[arrow] (tool.south) -- (tool.south |- exec.north);
+% Layers -> Exec (converge into top of exec box)
+\draw[arr] (-3.5, -1.2) -- (-3.5, -1.55);
+\draw[arr] (0, -1.2) -- (0, -1.55);
+\draw[arr] (3.5, -1.2) -- (3.5, -1.55);
 
-% Decision branches
-\node[decision, below=0.6cm of exec, xshift=-2.2cm, fill=mcpblue!10] (auto) {Auto-Invoke};
-\node[decision, below=0.6cm of exec, fill=skillorange!10] (rec) {Recommend};
-\node[decision, below=0.6cm of exec, xshift=2.2cm, fill=toolgreen!10] (inter) {Interview};
+% ---------- Branches ----------
+\node[decbox, fill=mcpblue!10] at (-2.8, -3.3) (auto) {Auto-Invoke};
+\node[decbox, fill=skillorange!10] at (0, -3.3) (rec) {Recommend};
+\node[decbox, fill=toolgreen!10] at (2.8, -3.3) (inter) {Interview};
 
-% Confidence labels
-\node[font=\tiny, text=medgray, above=0.05cm of auto] {≥ 0.9};
-\node[font=\tiny, text=medgray, above=0.05cm of rec] {0.7–0.9};
-\node[font=\tiny, text=medgray, above=0.05cm of inter] {< 0.7};
+% Confidence labels (between exec and branches)
+\node[cnf] at (-2.8, -2.65) {$\geq$ 0.9};
+\node[cnf] at (0, -2.65) {0.7 -- 0.9};
+\node[cnf] at (2.8, -2.65) {$<$ 0.7};
 
-% Arrows to decisions
-\draw[smallarrow] (exec.south -| auto.north) -- (auto.north);
-\draw[smallarrow] (exec.south -| rec.north) -- (rec.north);
-\draw[smallarrow] (exec.south -| inter.north) -- (inter.north);
-
-% Title
-\node[font=\large\bfseries, above=0.6cm of user, text=darkgray] {MST (MCP–Skill–Tool) Architecture};
+% Exec -> Branches (fan out from bottom of exec)
+\draw[arr] ($(exec.south) + (-2.8, 0)$) -- (-2.8, -2.98);
+\draw[arr] (exec.south) -- (0, -2.98);
+\draw[arr] ($(exec.south) + (2.8, 0)$) -- (2.8, -2.98);
 
 \end{tikzpicture}
 \end{document}
