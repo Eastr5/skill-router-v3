@@ -1,0 +1,51 @@
+# Skill Router State Snapshot
+# Auto-generated on first load, updated periodically
+# DO NOT EDIT MANUALLY — the router will overwrite this file
+
+version: "3.0.0"
+last_scan: "2026-06-07T00:00:00+08:00"
+platform: <auto-detected>
+os: <auto-detected>
+shell: <auto-detected>
+
+skills_detected:
+  global: []
+  project: []
+  builtin: []
+
+mcp_status: {}
+
+usage_stats:
+  total_invocations: 0
+  accepted_recommendations: 0
+  rejected_recommendations: 0
+  fallback_activations: 0
+
+confidence_weights: {}
+
+# Example entries (will be populated by Bootstrap Scan):
+# skills_detected:
+#   global:
+#     - name: figura
+#       path: ~/.trae-cn/builtin/global/skills/figura
+#       version: "1.0.0"
+#   project:
+#     - name: academic-research-assistant
+#       path: ./.trae/skills/academic-research-assistant
+#   builtin:
+#     - name: frontend-design
+#       source: trae-built-in
+#
+# mcp_status:
+#   mcp_paper-search:
+#     status: active
+#     last_check: "2026-06-07T12:00:00Z"
+#     response_time_ms: 120
+#   mcp_latex-mcp-server:
+#     status: placeholder
+#     reason: "python -m http.server 8080"
+#
+# confidence_weights:
+#   "research→literature-search": 1.2
+#   "design→frontend-design": 0.9
+#   "data→data-analysis": 1.0

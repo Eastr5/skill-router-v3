@@ -1,0 +1,69 @@
+\documentclass[tikz, border=12pt]{standalone}
+\usepackage{tikz}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, decorations.pathmorphing}
+
+% Okabe-Ito colorblind-safe palette
+\definecolor{bootstrapblue}{HTML}{0072B2}
+\definecolor{learningorange}{HTML}{D55E00}
+\definecolor{fallbackgreen}{HTML}{009E73}
+\definecolor{darkgray}{HTML}{333333}
+\definecolor{lightgray}{HTML}{F5F5F5}
+\definecolor{medgray}{HTML}{999999}
+
+\begin{document}
+\begin{tikzpicture}[
+    >=Stealth,
+    thick,
+    node distance=2.8cm,
+    mainnode/.style={
+        circle, minimum size=2.2cm, text centered,
+        font=\footnotesize\bfseries, draw=darkgray, line width=0.8pt,
+        fill=white, text width=1.8cm, align=center
+    },
+    centernode/.style={
+        circle, minimum size=1.6cm, text centered,
+        font=\scriptsize\bfseries, draw=darkgray, line width=0.6pt,
+        fill=lightgray, text width=1.4cm, align=center
+    },
+    statebox/.style={
+        rectangle, rounded corners=3pt, minimum width=2.8cm, minimum height=0.6cm,
+        text centered, font=\tiny, draw=medgray, line width=0.4pt,
+        fill=white, dashed
+    },
+    arrow/.style={
+        ->, line width=1.0pt, darkgray
+    },
+    cyclearrow/.style={
+        ->, line width=1.2pt, darkgray, bend left=25
+    }
+]
+
+% Title
+\node[font=\large\bfseries, text=darkgray] at (0, 3.2) {Self-Evolution Protocol};
+
+% Three main nodes in triangle
+\node[mainnode, fill=bootstrapblue!10, text=bootstrapblue] (boot) at (0, 1.8) {Bootstrap\\Scan};
+\node[mainnode, fill=learningorange!10, text=learningorange] (learn) at (-2.4, -1.2) {Runtime\\Learning};
+\node[mainnode, fill=fallbackgreen!10, text=fallbackgreen] (fallback) at (2.4, -1.2) {Adaptive\\Fallback};
+
+% Center node
+\node[centernode] (center) at (0, -0.2) {Self-Evolution\\Engine};
+
+% Cycle arrows
+\draw[cyclearrow] (boot) to (learn);
+\draw[cyclearrow] (learn) to (fallback);
+\draw[cyclearrow] (fallback) to (boot);
+
+% State persistence
+\node[statebox, below=0.8cm of center] (state) {skill-router-state.yaml};
+\draw[arrow, <->, line width=0.6pt, medgray] (center) -- (state);
+
+% Detail labels
+\node[font=\tiny, text=medgray, above=0.2cm of boot] {Scan skills · Detect MCP health};
+\node[font=\tiny, text=medgray, left=0.2cm of learn, align=right] {Log decisions\\Update weights};
+\node[font=\tiny, text=medgray, right=0.2cm of fallback, align=left] {Detect drift\\Consolidate state};
+
+\end{tikzpicture}
+\end{document}

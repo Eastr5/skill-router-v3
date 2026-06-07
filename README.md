@@ -1,7 +1,11 @@
-# Skill Router v3 🧭
+<p align="center">
+  <img src="assets/diagrams/rendered/logo-1.png" width="100" alt="Skill Router Logo">
+</p>
 
-[![Skills](https://img.shields.io/badge/skills-30%2B-blue)](https://github.com/your-username/skill-router-v3)
-[![Platforms](https://img.shields.io/badge/platforms-Trae%20%7C%20Claude%20%7C%20Cursor%20%7C%20VSCode-green)](https://github.com/your-username/skill-router-v3)
+# Skill Router v3
+
+[![Skills](https://img.shields.io/badge/skills-30%2B-blue)](https://github.com/Eastr5/skill-router-v3)
+[![Platforms](https://img.shields.io/badge/platforms-Trae%20%7C%20Claude%20%7C%20Cursor%20%7C%20VSCode-green)](https://github.com/Eastr5/skill-router-v3)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 [![MST](https://img.shields.io/badge/architecture-MCP--Skill--Tool-orange)](docs/architecture.md)
 
@@ -25,13 +29,13 @@ AI:  ✅ 生成 .tex → 编译 PDF → 展示 PNG
 
 ### Trae
 ```bash
-curl -sSL https://raw.githubusercontent.com/your-username/skill-router-v3/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/install.sh | bash
 ```
 
 ### Claude Code
 ```bash
 mkdir -p ~/.claude/skills/skill-router
-curl -sSL https://raw.githubusercontent.com/your-username/skill-router-v3/main/skills/skill-router/SKILL.md \
+curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/skills/skill-router/SKILL.md \
   -o ~/.claude/skills/skill-router/SKILL.md
 ```
 
@@ -40,27 +44,9 @@ curl -sSL https://raw.githubusercontent.com/your-username/skill-router-v3/main/s
 
 ## 🏗️ MST 三层架构
 
-```
-┌─────────────────────────────────────────┐
-│  USER REQUEST                           │
-│  ↓                                      │
-│  INTENT ANALYSIS                        │
-│  ├── Task type / Complexity / Urgency   │
-│  └── Constraints                        │
-│  ↓                                      │
-│  CAPABILITY MATCHING                    │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
-│  │ MCP     │ │ Skill   │ │ Tool    │   │
-│  │ Layer   │ │ Layer   │ │ Layer   │   │
-│  │ 外部服务 │ │ 领域知识 │ │ 原生操作 │   │
-│  └─────────┘ └─────────┘ └─────────┘   │
-│  ↓                                      │
-│  EXECUTION DECISION                     │
-│  ├── Confidence ≥ 0.9 → Auto-invoke     │
-│  ├── Confidence 0.7-0.9 → Recommend     │
-│  └── Confidence < 0.7 → Interview       │
-└─────────────────────────────────────────┘
-```
+<p align="center">
+  <img src="assets/diagrams/rendered/mst-architecture-1.png" width="750" alt="MST Architecture">
+</p>
 
 | 层级 | 职责 | 示例 |
 |---|---|---|
@@ -123,6 +109,20 @@ curl -sSL https://raw.githubusercontent.com/your-username/skill-router-v3/main/s
 | 11 | 多模型代码生成 | `AI router MCP` | `agent-swarm-orchestration` | `Task` |
 | 12 | 论文端到端发表 | `paper-search` + `semantic-scholar` | `literature-search` → `academic-research-assistant` → `figura` | `RunCommand` |
 
+## 🔄 自进化机制
+
+<p align="center">
+  <img src="assets/diagrams/rendered/self-evolution-1.png" width="600" alt="Self-Evolution Loop">
+</p>
+
+Skill Router v3 不是静态配置 —— 它会**自动扫描**你的环境，**学习**你的偏好，**进化**它的推荐：
+
+1. **Bootstrap Scan**: 启动时自动检测全局/项目 skills 和 MCP 健康状态
+2. **Runtime Learning**: 每次路由后记录反馈，动态调整置信度权重
+3. **Adaptive Fallback**: 主路径失败时自动学习备用路径，越用越准
+
+状态持久化到 `<project>/.trae/skill-router-state.yaml`，跨会话保持进化成果。
+
 ## 🌐 跨平台兼容
 
 | 平台 | Skill 路径 | 状态 |
@@ -147,7 +147,7 @@ curl -sSL https://raw.githubusercontent.com/your-username/skill-router-v3/main/s
 
 ### 1. 安装
 ```bash
-curl -sSL https://raw.githubusercontent.com/your-username/skill-router-v3/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/install.sh | bash
 ```
 
 ### 2. 重启你的 AI IDE
@@ -168,17 +168,49 @@ AI:  🧭 推荐 literature-search（多数据库文献搜索）
 AI:  ✅ 自动调用 tikz-diagrams-guide + figura
 ```
 
+## 📦 Packages
+
+| 包 | 大小 | 适用场景 | 架构 |
+|---|---|---|---|
+| **skill-router-v3** | ~15KB | 复杂任务、需要 MCP/Tool 管理 | MST 三层 + 自进化 |
+| **skill-router-lite** | ~5KB | 快速路由、纯 Skill 决策 | 单层决策树 |
+
+### 快速选择
+- 需要自动检测 MCP 状态？→ **v3**
+- 只需要"我该用啥 skill"？→ **lite**
+- 两者可以共存，v3 会自动 fallback 到 lite 的逻辑
+
+### 安装特定版本
+
+```bash
+# 只装 v3（完整功能）
+curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/install.sh | bash -s -- --package v3
+
+# 只装 lite（轻量快速）
+curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/install.sh | bash -s -- --package lite
+
+# 两者都装（默认）
+curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/install.sh | bash
+```
+
 ## 📁 仓库结构
 
 ```
 skill-router-v3/
 ├── README.md                 # 本文件
 ├── LICENSE                   # MIT
-├── install.sh                # 一键安装脚本
+├── install.sh                # 一键安装脚本（支持选择性安装）
+├── templates/
+│   └── skill-router-state.yaml   # 自进化状态模板
 ├── skills/
-│   ├── skill-router/         # MST 统一路由引擎
+│   ├── skill-router/         # MST 统一路由引擎（v3，含自进化）
 │   ├── figura/               # 出版级图表
 │   └── tikz-diagrams-guide/  # TikZ 科研绘图
+├── packages/
+│   └── skill-router-lite/    # 轻量决策树版本（v2）
+│       ├── SKILL.md
+│       ├── README.md
+│       └── examples/
 ├── examples/                 # 场景示例
 ├── docs/                     # 文档
 │   ├── architecture.md       # MST 架构详解

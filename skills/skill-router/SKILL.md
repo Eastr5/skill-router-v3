@@ -301,9 +301,109 @@ When this skill is invoked, reply in this format:
 - <MCP 健康状态 / 依赖 / 副作用>
 ```
 
+## Self-Evolution Protocol
+
+> The router MUST evolve its capability registry based on actual environment state, not static assumptions.
+
+### Stage 1: Bootstrap Scan (on first load)
+
+When this skill is loaded, the AI MUST perform an environment discovery:
+
+1. **Scan global skills**
+   - Trae: `Glob` pattern `~/.trae-cn/builtin/global/skills/*/` or `~/.trae/builtin_skills/*/`
+   - Claude Code: `~/.claude/skills/*/`
+   - Cursor: `.cursor/skills/*/`
+   - VSCode+Cline: `.cline/skills/*/`
+
+2. **Scan project skills**
+   - `Glob` pattern `<project>/.trae/skills/*/`
+
+3. **Detect MCP health**
+   - Try lightweight `mcp_*` calls (e.g., `mcp_GitHub_search_repositories` with limit=1)
+   - Mark responsive MCPs as ✅, timeouts as ⚠️, placeholders as ❌
+
+4. **Build dynamic registry**
+   - Merge scan results into `Environment Registry` below
+   - Update `skills_detected.global`, `skills_detected.project`, `mcp_status`
+
+5. **Persist snapshot**
+   - `Write` to `<project>/.trae/skill-router-state.yaml`
+   - Include timestamp, detected capabilities, and initial confidence weights
+
+### Stage 2: Runtime Learning (on each invocation)
+
+After each routing decision, the AI MUST log outcomes:
+
+1. **Log the decision**
+   - User request (paraphrased)
+   - Recommended path (MCP + Skill + Tool)
+   - User feedback (accepted / rejected / modified)
+
+2. **Update weights**
+   - If accepted: `confidence_weights[pattern] *= 1.1` (cap at 2.0)
+   - If rejected: `confidence_weights[pattern] *= 0.9` (floor at 0.3)
+   - If user chose alternative: boost that alternative's weight by 1.2x
+
+3. **Detect drift**
+   - If a previously healthy MCP fails 3 times in a row → mark as ⚠️
+   - If a new skill appears in scan → add to registry with default weight 1.0
+   - If a skill disappears → mark as deprecated, weight decays to 0.0 over 30 days
+
+4. **Periodic consolidation**
+   - Every 10 routing turns, `Write` updated state to `skill-router-state.yaml`
+   - Prune entries with weight < 0.3 (unused for long time)
+   - Archive usage stats for trend analysis
+
+### Stage 3: Adaptive Fallback
+
+When primary capability fails, the router MUST learn from the fallback:
+
+```
+Primary fails → Try fallback → Log result
+     ↑                              |
+     └────── Update weights ←───────┘
+```
+
+- If fallback succeeds: boost fallback path weight for similar future requests
+- If fallback also fails: trigger Interview mode and log the gap
+
+## Environment Registry (Dynamic — updated by Bootstrap Scan)
+
+```yaml
+# This section is AUTO-GENERATED on first load.
+# Do not edit manually — the router will overwrite it.
+platform: <detected>
+os: <detected>
+shell: <detected>
+
+mcp_status:
+  # Populated by health checks during Bootstrap Scan
+  # Example:
+  # mcp_paper-search: {status: active, last_check: "2026-06-07T12:00:00Z"}
+  # mcp_latex-mcp-server: {status: placeholder, reason: "python http.server"}
+
+skills_detected:
+  global: []    # From ~/.trae-cn/builtin/global/skills/*/
+  project: []   # From <project>/.trae/skills/*/
+  builtin: []   # Trae-built-in skills (from skill inventory)
+
+usage_stats:
+  total_invocations: 0
+  accepted_recommendations: 0
+  rejected_recommendations: 0
+
+confidence_weights:
+  # Pattern → multiplier
+  # Example:
+  # "research→literature-search": 1.2
+  # "design→frontend-design": 0.9
+```
+
 ## Constraints
 - Never recommend more than 1 MCP + 2 Skills + 2 Tools in a single route
 - Always check MCP health before recommending
 - If confidence < 0.7, switch to Interview mode — don't guess
 - Respect platform differences (Trae vs Claude Code vs Cursor)
 - Update environment registry when new capabilities are installed
+- Run Bootstrap Scan on every Trae IDE restart (skills may have changed)
+- Always persist state changes to `skill-router-state.yaml` before ending session
