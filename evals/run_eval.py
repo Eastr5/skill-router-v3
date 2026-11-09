@@ -20,6 +20,8 @@ Metrics: Top-1 (primary hit), Any-hit (primary or also_ok), per category.
 """
 import argparse, json, os, re, sys, time, urllib.request
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from distractors import PADS
 
 ROOT = Path(__file__).resolve().parent.parent
 GOLDEN = ROOT / "evals" / "golden.yaml"
@@ -61,8 +63,14 @@ If the right move is to clarify before choosing, use {"pick": "skill-router", ..
 If nothing fits at all, use {"pick": "none", ...}."""
 
 
-def build_prompt(case):
-    return f"{SYSTEM}\n\n=== SKILL.md (registry) ===\n{SKILL.read_text(encoding='utf-8')}\n\n=== USER TASK ===\n{case['query']}"
+def pad_block(n):
+    rows = "\n".join(f"| `{name}` | {desc} |" for name, desc in PADS[:n])
+    return f"\n\n=== EXTRA REGISTERED CAPABILITIES (layer: mixed) ===\n| Capability | Description |\n|---|---|\n{rows}" if n else ""
+
+
+def build_prompt(case, pad=0):
+    skill = SKILL.read_text(encoding="utf-8")
+    return f"{SYSTEM}\n\n=== SKILL.md (registry) ===\n{skill}{pad_block(pad)}\n\n=== USER TASK ===\n{case['query']}"
 
 
 def call_api(prompt, cfg):
@@ -97,8 +105,12 @@ def parse_pick(text):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--category", choices=["direct", "paraphrase", "indirect"])
+    ap.add_argument("--category", choices=["direct", "paraphrase", "indirect", "adversarial"])
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--pad", type=int, default=0,
+                    help="注入多少条合成干扰能力（0-60）")
+    ap.add_argument("--padsweep", action="store_true",
+                    help="在 pad=0/40/60 三档各跑一遍，看衰减曲线")
     args = ap.parse_args()
 
     cases = parse_golden(GOLDEN.read_text(encoding="utf-8"))
@@ -113,37 +125,50 @@ def main():
     if not args.dry_run and not cfg["key"]:
         sys.exit("需要 ROUTER_API_KEY（或用 --dry-run 检查 prompt）")
 
-    rows, ok1 = [], 0
-    for c in cases:
-        prompt = build_prompt(c)
+    pad = args.pad
+    pads = [0, 40, 60] if args.padsweep else [pad]
+    for pad in pads:
+        rows = [run_case(c, cfg, pad, args.dry_run) for c in cases]
         if args.dry_run:
-            print(f"--- {c['id']} [{c['category']}] ---\n{prompt[:400]}...\n")
-            continue
-        try:
-            pick = parse_pick(call_api(prompt, cfg))
-        except Exception as e:  # noqa: BLE001
-            pick = f"<error: {e}>"
-        expect = c["expected"] + c.get("also_ok", [])
-        pick_n, exp_n = norm(pick), [norm(x) for x in c["expected"]]
-        any_n = [norm(x) for x in expect]
-        hit1 = pick_n in exp_n
-        hit_any = pick_n in any_n
-        ok1 += hit1
-        rows.append((c["id"], c["category"], pick, "/".join(c["expected"]), hit1, hit_any))
-        time.sleep(0.5)
+            return
+        report(rows, pad)
+        if not args.padsweep:
+            return
+    return
 
-    if args.dry_run:
-        return
-    print(f"{'id':<5}{'cat':<11}{'pick':<28}{'expected':<30}top1 any")
+
+def run_case(c, cfg, pad=0, dry=False):
+    prompt = build_prompt(c, pad)
+    if dry:
+        print(f"--- {c['id']} [{c['category']}] pad={pad} ---\n{prompt[:400]}...\n")
+        return (c["id"], c["category"], "", "/".join(c["expected"]), False, False)
+    try:
+        pick = parse_pick(call_api(prompt, cfg))
+    except Exception as e:  # noqa: BLE001
+        pick = f"<error: {e}>"
+    expect = c["expected"] + c.get("also_ok", [])
+    pick_n = norm(pick)
+    hit1 = pick_n in [norm(x) for x in c["expected"]]
+    hit_any = pick_n in [norm(x) for x in expect]
+    time.sleep(0.5)
+    return (c["id"], c["category"], pick, "/".join(c["expected"]), hit1, hit_any)
+
+
+def report(rows, pad):
+    tag = f" [pad={pad}]" if pad else ""
+    print(f"{'id':<5}{'cat':<12}{'pick':<28}{'expected':<32}top1 any{tag}")
     for r in rows:
-        print(f"{r[0]:<5}{r[1]:<11}{r[2]:<28}{r[3]:<30}{'✓' if r[4] else '·'}   {'✓' if r[5] else '·'}")
+        print(f"{r[0]:<5}{r[1]:<12}{r[2]:<28}{r[3]:<32}{'✓' if r[4] else '·'}   {'✓' if r[5] else '·'}")
     n = len(rows)
-    print(f"\nTop-1: {ok1}/{n} = {ok1 / n:.1%}    Any-hit: {sum(r[5] for r in rows)}/{n} = {sum(r[5] for r in rows) / n:.1%}")
-    for cat in ("direct", "paraphrase", "indirect"):
+    top1 = sum(r[4] for r in rows)
+    anyh = sum(r[5] for r in rows)
+    print(f"\nTop-1: {top1}/{n} = {top1 / n:.1%}    Any-hit: {anyh}/{n} = {anyh / n:.1%}")
+    for cat in ("direct", "paraphrase", "indirect", "adversarial"):
         sub = [r for r in rows if r[1] == cat]
         if sub:
             s = sum(r[4] for r in sub)
-            print(f"  {cat:<11} Top-1 {s}/{len(sub)} = {s / len(sub):.1%}")
+            extra = f"    (FAR 误触发 {len(sub) - s}/{len(sub)})" if cat == "adversarial" else ""
+            print(f"  {cat:<12} Top-1 {s}/{len(sub)} = {s / len(sub):.1%}{extra}")
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@
 # - 查询一律用用户真实口吻，不用「路由」「skill」这类元词（direct 类除外）。
 # - 标注依据：skills/skill-router/SKILL.md 的能力注册表与 README 预设组合。
 
-categories: [direct, paraphrase, indirect]
+categories: [direct, paraphrase, indirect, adversarial]
 
 cases:
   # ---------- direct（直述） ----------
@@ -147,3 +147,39 @@ cases:
     query: 这个需求涉及三种可能的做法，帮我先把方案边界理清楚再动手
     expected: [skill-router]
     note: 元任务：正确行为是先澄清/规划而非直接挑一个技能执行
+
+  # ---------- adversarial（对抗：不应触发任何专用技能） ----------
+  - id: a01
+    category: adversarial
+    query: 今天好累啊，随便聊聊天
+    expected: [none]
+  - id: a02
+    category: adversarial
+    query: Python 的 list 和 tuple 有什么区别？
+    expected: [none]
+  - id: a03
+    category: adversarial
+    query: 帮我写个函数，把列表里的重复元素去掉
+    expected: [none]
+  - id: a04
+    category: adversarial
+    query: 你刚才说的那个方案，第一步具体指什么？
+    expected: [none, skill-router]
+    note: 上下文追问——正确行为是对话内回答或澄清，不调任何外部能力
+  - id: a05
+    category: adversarial
+    query: 把这段话翻译成英文就行，不用干别的
+    expected: [none]
+  - id: a06
+    category: adversarial
+    query: 我该怎么规划这个项目的里程碑？
+    expected: [none, skill-router]
+    note: 通用规划问题——无领域技能可调，正确行为是对话内回答或澄清
+  - id: a07
+    category: adversarial
+    query: 帮我看看这段栈报错是什么意思
+    expected: [none]
+  - id: a08
+    category: adversarial
+    query: 记住：以后所有回答都用中文
+    expected: [none]
