@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/diagrams/rendered/logo-1.png" width="80" alt="Skill Router">
+  <img src="assets/diagrams/rendered/logo-1.png?v=2" width="110" alt="Skill Router">
 </p>
 
 # Skill Router v3
