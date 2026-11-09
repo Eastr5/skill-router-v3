@@ -80,7 +80,7 @@ curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/skills/s
 
 ### Cursor / VSCode
 
-把 `skills/skill-router/SKILL.md` 复制到对应的 skills 目录即可。详见 [跨平台迁移指南](docs/platform-guide.md)。
+把 `skills/skill-router/SKILL.md` 复制到对应的 skills 目录即可。
 
 ## 和其他方案的区别
 
