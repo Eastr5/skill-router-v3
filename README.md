@@ -120,7 +120,7 @@ curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/skills/s
 
 ## 路线图
 
-- [ ] **评测集**：`evals/golden.yaml`，30+ 条任务描述 → 正确技能的标注，覆盖直述 / 转述 / 间接三类查询，附带跑分脚本
+- [ ] **评测集**：`evals/golden.yaml` 已就位——30 条查询（直述/转述/间接各 10），标注写在测试之前；跑分脚本 `evals/run_eval.py`（零依赖，OpenAI 兼容接口，支持 --dry-run）。尚未跑分，结果出来后更新本表
 - [ ] **检索化（v4）**：本地 embedding + BM25 混合打分的 `match_skill`，评测集作为验收标准
 - [ ] 基于使用计数的自动调权（依赖评测集先行）
 

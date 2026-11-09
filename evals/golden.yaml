@@ -1,0 +1,149 @@
+# Skill Router v3 — 评测集 golden set
+#
+# 规则（写在测试之前，2026-11-09）：
+# - 30 条查询，三类各 10 条：direct（直述，含技能/工具名）、
+#   paraphrase（转述，同义换说法）、indirect（间接，只描述任务不提技术）。
+# - expected[0] 是首选技能/工具；also_ok 是可接受的同义答案。
+# - 查询一律用用户真实口吻，不用「路由」「skill」这类元词（direct 类除外）。
+# - 标注依据：skills/skill-router/SKILL.md 的能力注册表与 README 预设组合。
+
+categories: [direct, paraphrase, indirect]
+
+cases:
+  # ---------- direct（直述） ----------
+  - id: d01
+    category: direct
+    query: 用 paper-search 帮我找几篇 RAG 幻觉缓解的论文
+    expected: [paper-search]
+  - id: d02
+    category: direct
+    query: 帮我把这批 DOI 对应的 PDF 全部下载并导入 Zotero
+    expected: [literature-search]
+    also_ok: [paper-search]
+  - id: d03
+    category: direct
+    query: 用 TikZ 画一个 Transformer 架构图，要能编译出 PDF
+    expected: [tikz-diagrams-guide, figura]
+  - id: d04
+    category: direct
+    query: 帮我 review 一下当前改动，做一次代码审查
+    expected: [TRAE-code-review]
+    also_ok: [TRAE-security-review]
+  - id: d05
+    category: direct
+    query: 扫一下这个项目有没有安全漏洞
+    expected: [TRAE-security-review]
+  - id: d06
+    category: direct
+    query: 用 figma 的设计稿生成前端代码
+    expected: [figma, frontend-design]
+  - id: d07
+    category: direct
+    query: 把这个网页正文抓下来存成笔记
+    expected: [defuddle, obsidian-markdown]
+    also_ok: [WebFetch]
+  - id: d08
+    category: direct
+    query: 用 agent-browser 打开页面做一次端到端测试
+    expected: [agent-browser, dogfood]
+  - id: d09
+    category: direct
+    query: 查一下 MySQL 里上月订单量的分布
+    expected: [MySQL, data-analysis]
+  - id: d10
+    category: direct
+    query: 按 PRISMA 流程帮我做一篇系统综述
+    expected: [academic-research-assistant, paper-search]
+
+  # ---------- paraphrase（转述） ----------
+  - id: p01
+    category: paraphrase
+    query: 帮我调研一下 LLM agent 记忆方向的最新进展，列个文献清单
+    expected: [paper-search, literature-search]
+  - id: p02
+    category: paraphrase
+    query: 这篇综述的参考文献太乱了，帮我统一整理到文献管理工具里
+    expected: [literature-search]
+    also_ok: [academic-research-assistant]
+  - id: p03
+    category: paraphrase
+    query: 我要给论文画一张 PGFPlots 的实验对比折线图
+    expected: [tikz-diagrams-guide, figura]
+  - id: p04
+    category: paraphrase
+    query: 这次提交帮我看看有没有明显的坏味道和低级错误
+    expected: [TRAE-code-review]
+  - id: p05
+    category: paraphrase
+    query: 检查一下这段代码会不会有注入或者越权的问题
+    expected: [TRAE-security-review]
+    also_ok: [TRAE-code-review]
+  - id: p06
+    category: paraphrase
+    query: 把 Figma 里这个 landing page 还原成 React 页面
+    expected: [figma, frontend-design]
+    also_ok: [web-dev, shadcn]
+  - id: p07
+    category: paraphrase
+    query: 帮我把这篇文章剪藏进我的知识库
+    expected: [defuddle, obsidian-markdown]
+  - id: p08
+    category: paraphrase
+    query: 从数据库里拉一下各渠道的转化率，做张表
+    expected: [MySQL, data-analysis]
+  - id: p09
+    category: paraphrase
+    query: 用自动化浏览器把下单流程完整跑一遍，截图给我
+    expected: [agent-browser, dogfood]
+  - id: p10
+    category: paraphrase
+    query: 我想系统梳理某个研究问题，帮我把检索、筛选、综述的流程管起来
+    expected: [academic-research-assistant]
+    also_ok: [paper-search, literature-search]
+
+  # ---------- indirect（间接，不提技术） ----------
+  - id: i01
+    category: indirect
+    query: 「combine several invoices into a single file for printing」这类任务该怎么拆？
+    expected: [Read, RunCommand]
+    note: 借鉴 skill-router-mcp 的经典样例；无专用技能时正确答案是落在 Tool 层
+  - id: i02
+    category: indirect
+    query: 我下周要开题，想把相关领域近三年的工作都过一遍
+    expected: [paper-search, literature-search, academic-research-assistant]
+  - id: i03
+    category: indirect
+    query: 老板的 PPT 里需要一张我们模型结构的示意图，要矢量能放大
+    expected: [tikz-diagrams-guide, figura]
+  - id: i04
+    category: indirect
+    query: 线上刚出了一起事故，帮我看看这次 diff 里有没有嫌疑代码
+    expected: [TRAE-code-review]
+    also_ok: [TRAE-security-review]
+  - id: i05
+    category: indirect
+    query: 用户反馈我们网站注册按钮在手机上点不动，帮我复现一下
+    expected: [agent-browser, dogfood]
+  - id: i06
+    category: indirect
+    query: 竞品官网改版了，帮我把新首页搬过来当参考
+    expected: [figma, frontend-design, web-dev]
+    also_ok: [defuddle, WebFetch]
+  - id: i07
+    category: indirect
+    query: 每天早上把昨天的销售数据汇总成一页报告发我
+    expected: [MySQL, data-analysis, report-generator]
+  - id: i08
+    category: indirect
+    query: 我读了一篇很好的长文，想完整存下来以后翻
+    expected: [defuddle, obsidian-markdown]
+    also_ok: [WebFetch]
+  - id: i09
+    category: indirect
+    query: 帮我搭一个活动落地页，风格要和品牌色一致
+    expected: [web-dev, frontend-design, theme-factory]
+  - id: i10
+    category: indirect
+    query: 这个需求涉及三种可能的做法，帮我先把方案边界理清楚再动手
+    expected: [skill-router]
+    note: 元任务：正确行为是先澄清/规划而非直接挑一个技能执行
