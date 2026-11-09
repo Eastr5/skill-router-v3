@@ -122,6 +122,7 @@ curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/skills/s
 
 - [ ] **评测集**：`evals/golden.yaml` 已就位——30 条查询（直述/转述/间接各 10），标注写在测试之前；跑分脚本 `evals/run_eval.py`（零依赖，OpenAI 兼容接口，支持 --dry-run）。尚未跑分，结果出来后更新本表
 - [ ] **检索化（v4）**：本地 embedding + BM25 混合打分的 `match_skill`，评测集作为验收标准
+- [ ] **Decision model 后端（v4）**：参考 Jev / System One 范式（typed Choice/Score + 校准概率，如开源的 Laya 421M），作为可选打分后端——替换「模型自报置信度」这块目前最弱的环节；默认仍为零安装的 prompt 模式，评测集作为两种后端的对比验收标准
 - [ ] 基于使用计数的自动调权（依赖评测集先行）
 
 ## 致谢与来源
