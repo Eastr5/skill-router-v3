@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1080px;height:1040px;background:#F7F6F3;font-family:"Microsoft YaHei",sans-serif;color:#24292F}
+.card{width:1080px;height:1040px;background:#F7F6F3;border:2px solid #E2E0DA;border-radius:14px;padding:44px 48px;display:flex;flex-direction:column}
+h1{font-family:"Noto Serif SC",serif;font-size:34px;text-align:center;font-weight:700}
+h1 span{color:#1F7A52}
+.bar{background:#fff;border:2px solid #C9C6BE;border-radius:10px;text-align:center;padding:14px 0;font-weight:700;font-size:22px;letter-spacing:.06em}
+.row{display:flex;gap:24px;margin-top:8px}
+.col{flex:1;border:2px solid;border-radius:12px;padding:18px 20px;background:#fff}
+.col h2{font-size:21px;margin-bottom:2px}
+.col .en{font-size:13px;letter-spacing:.18em;color:#8A8578;margin-bottom:10px}
+.col li{list-style:none;font-size:17px;line-height:1.85;color:#4A4A45}
+.mcp{border-color:#2F5D8A}.mcp h2{color:#2F5D8A}
+.skl{border-color:#1F7A52}.skl h2{color:#1F7A52}
+.tool{border-color:#B5651D}.tool h2{color:#B5651D}
+.chips{display:flex;justify-content:center;gap:12px;margin:10px 0 14px}
+.chip{font-size:14px;color:#5A564D;background:#EFEDE7;border:1px solid #D8D5CC;border-radius:999px;padding:4px 14px}
+.arrow{width:3px;height:22px;background:#8A8578;margin:0 auto;position:relative}
+.arrow::after{content:"";position:absolute;bottom:-1px;left:-5px;border:6.5px solid transparent;border-top:9px solid #8A8578}
+.dec{display:flex;gap:24px;margin-top:8px}
+.dbox{flex:1;text-align:center;border-radius:10px;padding:12px 0 14px;border:2px solid;background:#fff}
+.dbox .t{font-weight:700;font-size:19px}
+.dbox .s{font-size:14px;color:#8A8578;margin-top:2px}
+.d1{border-color:#1F7A52}.d1 .t{color:#1F7A52}
+.d2{border-color:#B5651D}.d2 .t{color:#B5651D}
+.d3{border-color:#8A8578}.d3 .t{color:#5A564D}
+.gap{height:16px}
+</style></head><body><div class="card">
+<h1>MST <span>(MCP – Skill – Tool)</span> 路由架构</h1>
+<div class="gap"></div>
+<div class="bar">USER REQUEST　用户请求</div>
+<div class="arrow"></div>
+<div class="bar">INTENT ANALYSIS　意图分析</div>
+<div class="chips">
+  <span class="chip">任务类型</span><span class="chip">复杂度</span><span class="chip">紧迫度</span><span class="chip">约束（离线 / 成本 / 安全）</span>
+</div>
+<div class="row">
+  <div class="col mcp"><h2>MCP 层</h2><div class="en">EXTERNAL SERVICES</div><li>paper-search</li><li>MySQL</li><li>GitHub</li></div>
+  <div class="col skl"><h2>Skill 层</h2><div class="en">DOMAIN KNOWLEDGE</div><li>TikZ 绘图</li><li>Code Review</li><li>Data Analysis</li></div>
+  <div class="col tool"><h2>Tool 层</h2><div class="en">NATIVE IDE OPS</div><li>Read / Write</li><li>RunCommand</li><li>Task</li></div>
+</div>
+<div class="arrow"></div>
+<div class="bar">EXECUTION DECISION　执行决策</div>
+<div class="dec">
+  <div class="dbox d1"><div class="t">直接执行</div><div class="s">置信度 ≥ 0.9</div></div>
+  <div class="dbox d2"><div class="t">建议后确认</div><div class="s">0.7 – 0.9</div></div>
+  <div class="dbox d3"><div class="t">先追问澄清</div><div class="s">&lt; 0.7</div></div>
+</div>
+</div></body></html>
