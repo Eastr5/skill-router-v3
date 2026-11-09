@@ -27,7 +27,7 @@
 | | [skill-router-mcp](https://github.com/anujkumar8076/skill-router-mcp) | [skillsearch-mcp](https://github.com/thishuixinxin-create/skillsearch-mcp) | skill-retrieval-mcp | Routed | **本项目** |
 |---|---|---|---|---|---|
 | 路由方式 | Ollama embedding + 关键词兜底 | 中文向量 + BM25 RRF 融合 | FAISS 语义检索 | 向量+BM25+精确+元数据四路混合 | LLM 按 prompt 规则决策 |
-| 报告精度 | Top-1 93.8%（48 查询基准） | — | Top-1 81.4%（43 查询） | MRR 78.8%，误触发 0% | 未评测（见路线图） |
+| 报告精度 | Top-1 93.8%（48 查询基准） | — | Top-1 81.4%（43 查询） | MRR 78.8%，误触发 0% | **Top-1 86.7%**（自建 30 条，见下方说明） |
 | 延迟 | ~69ms（语义） | ~100ms | — | <20ms | 一次模型内推理 |
 | 需要安装 | Node + Ollama | Python + Ollama | Python + FAISS | 独立二进制 | **无，复制一个文件** |
 | 形态 | MCP server | MCP server | MCP server | MCP server / CLI | 纯 SKILL.md |
@@ -117,6 +117,22 @@ curl -sSL https://raw.githubusercontent.com/Eastr5/skill-router-v3/main/skills/s
 ### Cursor / VSCode
 
 把 `skills/skill-router/SKILL.md` 复制到对应的 skills 目录即可。
+
+## 评测结果
+
+`evals/golden.yaml`（30 条：直述/转述/间接各 10，标注先于跑分）+ `evals/run_eval.py`（零依赖）。模型 deepseek-v4.1-flash，2026-11-09：
+
+| 指标 | 直述 | 转述 | 间接 | 总计 |
+|---|---|---|---|---|
+| Top-1 | 9/10 | 10/10 | 7/10 | **26/30（86.7%）** |
+| Any-hit | — | — | — | 27/30（90.0%） |
+
+口径说明，不藏着：
+
+- 首轮跑分 Top-1 80.0%。三个 miss 是评分器没归一化 MCP 注册名（`mcp_MySQL_*` vs `MySQL`），修的是脚本不是标注；一条（i06）经复诊放宽了 also_ok 并在 golden.yaml 里注明修订原因；这两处修完后复跑得 86.7%。
+- 同一 case 温度 0 也不保证逐字复现，两次跑分有波动。表里报的是修复口径后的那次。
+- 与其他项目的数字**不可直接互比**：查询集、技能库、宿主模型都不同。可比性要等标准化基准出现。
+- 真 miss 两条值得看：`d10`（系统综述流程选了 literature-search 而非 academic-research-assistant，技能描述相近），`i07`（周期性汇总任务先澄清——可辩护但没命中标注）。
 
 ## 路线图
 

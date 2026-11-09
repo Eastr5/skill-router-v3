@@ -79,9 +79,19 @@ def call_api(prompt, cfg):
     return data["choices"][0]["message"]["content"]
 
 
+def norm(name):
+    """MCP 注册名归一化：mcp_paper-search_* -> paper-search"""
+    name = name.strip()
+    if name.startswith("mcp_"):
+        name = name[4:]
+    if name.endswith("_*"):
+        name = name[:-2]
+    return name
+
+
 def parse_pick(text):
     m = re.search(r'\{[^{}]*"pick"\s*:\s*"([^"]+)"[^{}]*\}', text, re.S)
-    return m.group(1).strip() if m else f"<unparseable: {text[:60]!r}>"
+    return norm(m.group(1)) if m else f"<unparseable: {text[:60]!r}>"
 
 
 def main():
@@ -114,8 +124,10 @@ def main():
         except Exception as e:  # noqa: BLE001
             pick = f"<error: {e}>"
         expect = c["expected"] + c.get("also_ok", [])
-        hit1 = pick in c["expected"]
-        hit_any = pick in expect
+        pick_n, exp_n = norm(pick), [norm(x) for x in c["expected"]]
+        any_n = [norm(x) for x in expect]
+        hit1 = pick_n in exp_n
+        hit_any = pick_n in any_n
         ok1 += hit1
         rows.append((c["id"], c["category"], pick, "/".join(c["expected"]), hit1, hit_any))
         time.sleep(0.5)

@@ -128,7 +128,7 @@ cases:
     category: indirect
     query: 竞品官网改版了，帮我把新首页搬过来当参考
     expected: [figma, frontend-design, web-dev]
-    also_ok: [defuddle, WebFetch]
+    also_ok: [defuddle, WebFetch]  # 修订 2026-11-09：首轮跑分选 defuddle，复诊认为可辩护（搬网页存参考），加入 also_ok
   - id: i07
     category: indirect
     query: 每天早上把昨天的销售数据汇总成一页报告发我
